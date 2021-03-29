@@ -31,7 +31,7 @@
 
     <licenses>
         <license>
-            <name>ISC License</name>
+            <name>OpenBSD License</name>
             <url>https://cvsweb.openbsd.org/src/share/misc/license.template?rev=HEAD</url>
         </license>
     </licenses>

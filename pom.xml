@@ -49,21 +49,24 @@
         <url>http://github.com/HyperaOfficial/UpdateLib/tree/main</url>
     </scm>
 
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/HyperaOfficial/UpdateLib/issues</url>
+    </issueManagement>
+
     <properties>
         <java.version>1.8</java.version>
     </properties>
 
     <distributionManagement>
-        <repository>
-            <id>hypera</id>
-            <name>Hypera Releases</name>
-            <url>https://repo.hypera.dev/releases/</url>
-        </repository>
         <snapshotRepository>
-            <id>hypera</id>
-            <name>Hypera Snapshots</name>
+            <id>hypera-snapshots</id>
             <url>https://repo.hypera.dev/snapshots/</url>
         </snapshotRepository>
+        <repository>
+            <id>hypera-releases</id>
+            <url>https://repo.hypera.dev/releases/</url>
+        </repository>
     </distributionManagement>
 
     <build>

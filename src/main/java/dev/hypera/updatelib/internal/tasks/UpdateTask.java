@@ -17,21 +17,25 @@
 package dev.hypera.updatelib.internal.tasks;
 
 import dev.hypera.updatelib.internal.UpdateLib;
+import dev.hypera.updatelib.internal.UpdateResponse;
 
 import java.util.TimerTask;
+import java.util.function.Consumer;
 
 public class UpdateTask extends TimerTask {
 
     private final long resourceId;
     private final String currentVersion;
     private final int timeout;
+    private final Consumer<UpdateResponse> consumer;
 
     private final UpdateLib updateLib;
 
-    public UpdateTask(long resourceId, String currentVersion, int timeout, UpdateLib updateLib) {
+    public UpdateTask(long resourceId, String currentVersion, int timeout, Consumer<UpdateResponse> consumer, UpdateLib updateLib) {
         this.resourceId = resourceId;
         this.currentVersion = currentVersion;
         this.timeout = timeout;
+        this.consumer = consumer;
         this.updateLib = updateLib;
     }
 
@@ -41,11 +45,12 @@ public class UpdateTask extends TimerTask {
             try {
                 updateLib.setLastResponse(new UpdateChecker().check(resourceId, currentVersion, timeout));
                 updateLib.setLastCheck(System.currentTimeMillis());
+
+                if(null != consumer) consumer.accept(updateLib.getLastResponse());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
-
         thread.setName("UpdateLib-" + thread.getId());
         thread.start();
     }

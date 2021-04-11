@@ -17,68 +17,94 @@
 package dev.hypera.updatelib;
 
 import dev.hypera.updatelib.internal.UpdateLib;
+import dev.hypera.updatelib.internal.UpdateResponse;
 
+import java.util.function.Consumer;
+
+@SuppressWarnings("unused")
 public class UpdateLibBuilder {
 
-    private final long resourceId;
-    private final String currentVersion;
+	private final long resourceId;
+	private final String currentVersion;
 
-    private boolean repeatingChecksEnabled = true;
-    private long checkInterval = 2 * (60 * (60 * 1000)); // 2 Hours
-    private int connectionTimeout = 5000; // 5 Seconds
+	private boolean repeatingChecksEnabled = true;
+	private long checkInterval = 2 * (60 * (60 * 1000)); // 2 Hours
+	private int connectionTimeout = 5000; // 5 Seconds
 
-    private UpdateLibBuilder(String currentVersion, long resourceId) {
-        this.currentVersion = currentVersion;
-        this.resourceId = resourceId;
-    }
+	private Consumer<UpdateResponse> consumer = null;
 
-    /**
-     * Creates a new instance of {@link UpdateLibBuilder}.
-     *
-     * @param currentVersion Current version of the resource.
-     * @param resourceId SpigotMC Resource Id.
-     * @return Instance of {@link UpdateLibBuilder}
-     */
-    public static UpdateLibBuilder create(String currentVersion, long resourceId) {
-        return new UpdateLibBuilder(currentVersion, resourceId);
-    }
+	private UpdateLibBuilder(String currentVersion, long resourceId) {
+		this.currentVersion = currentVersion;
+		this.resourceId = resourceId;
+	}
 
-    /**
-     * Should UpdateLib keep checking for updates? (Time defined by checkInterval)
-     *
-     * @param enabled Repeating checks enabled.
-     * @see #setCheckInterval(long)
-     */
-    public void setRepeatingChecksEnabled(boolean enabled) {
-        this.repeatingChecksEnabled = enabled;
-    }
+	/**
+	 * Creates a new instance of {@link UpdateLibBuilder}.
+	 *
+	 * @param currentVersion Current version of the resource.
+	 * @param resourceId     SpigotMC Resource Id.
+	 *
+	 * @return Instance of {@link UpdateLibBuilder}
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public static UpdateLibBuilder create(String currentVersion, long resourceId) {
+		return new UpdateLibBuilder(currentVersion, resourceId);
+	}
 
-    /**
-     * How often should UpdateLib check for updates? (Only works if repeatingChecksEnabled is true)
-     *
-     * @param interval Interval in milliseconds.
-     * @see #setRepeatingChecksEnabled(boolean)
-     */
-    public void setCheckInterval(long interval) {
-        this.checkInterval = interval;
-    }
+	/**
+	 * Should UpdateLib keep checking for updates? (Time defined by checkInterval)
+	 *
+	 * @param enabled Repeating checks enabled.
+	 *
+	 * @see #setCheckInterval(long)
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public void setRepeatingChecksEnabled(boolean enabled) {
+		this.repeatingChecksEnabled = enabled;
+	}
 
-    /**
-     * After how many milliseconds should we timeout the request to SpigotMC's API?
-     *
-     * @param timeout Timeout in milliseconds.
-     */
-    public void setConnectionTimeout(int timeout) {
-        this.connectionTimeout = timeout;
-    }
+	/**
+	 * How often should UpdateLib check for updates? (Only works if repeatingChecksEnabled is true)
+	 *
+	 * @param interval Interval in milliseconds.
+	 *
+	 * @see #setRepeatingChecksEnabled(boolean)
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public void setCheckInterval(long interval) {
+		this.checkInterval = interval;
+	}
 
-    /**
-     * Builds a new instance of {@link UpdateLib}.
-     *
-     * @return Instance of {@link UpdateLib}
-     */
-    public UpdateLib build() {
-        return new UpdateLib(resourceId, currentVersion, repeatingChecksEnabled, checkInterval, connectionTimeout);
-    }
+	/**
+	 * After how many milliseconds should we timeout the request to SpigotMC's API?
+	 *
+	 * @param timeout Timeout in milliseconds.
+	 *
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public void setConnectionTimeout(int timeout) {
+		this.connectionTimeout = timeout;
+	}
+
+	/**
+	 * Sets a consumer to run after UpdateLib has checked for an update.
+	 *
+	 * @param consumer Consumer to run after checking for an update.
+	 *
+	 * @since 2.1.0-SNAPSHOT
+	 */
+	public void setConsumer(Consumer<UpdateResponse> consumer) {
+		this.consumer = consumer;
+	}
+
+	/**
+	 * Builds a new instance of {@link UpdateLib}.
+	 *
+	 * @return Instance of {@link UpdateLib}
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public UpdateLib build() {
+		return new UpdateLib(resourceId, currentVersion, repeatingChecksEnabled, checkInterval, connectionTimeout, consumer);
+	}
 
 }

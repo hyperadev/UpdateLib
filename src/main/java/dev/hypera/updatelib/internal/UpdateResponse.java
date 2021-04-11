@@ -18,26 +18,44 @@ package dev.hypera.updatelib.internal;
 
 public class UpdateResponse {
 
-    private final boolean updateAvailable;
-    private final String currentVersion;
-    private final String spigotVersion;
+	private final boolean updateAvailable;
+	private final String currentVersion;
+	private final String spigotVersion;
 
-    public UpdateResponse(boolean updateAvailable, String currentVersion, String spigotVersion) {
-        this.updateAvailable = updateAvailable;
-        this.currentVersion = currentVersion;
-        this.spigotVersion = spigotVersion;
-    }
+	public UpdateResponse(boolean updateAvailable, String currentVersion, String spigotVersion) {
+		this.updateAvailable = updateAvailable;
+		this.currentVersion = currentVersion;
+		this.spigotVersion = spigotVersion;
+	}
 
-    public boolean isUpdateAvailable() {
-        return updateAvailable;
-    }
+	/**
+	 * Is an update available?
+	 *
+	 * @return Update available.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public boolean isUpdateAvailable() {
+		return updateAvailable;
+	}
 
-    public String getCurrentVersion() {
-        return currentVersion;
-    }
+	/**
+	 * Get the current version of the plugin.
+	 *
+	 * @return Current version.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public String getCurrentVersion() {
+		return currentVersion;
+	}
 
-    public String getSpigotVersion() {
-        return spigotVersion;
-    }
+	/**
+	 * Get the current version of the plugin on SpigotMC.
+	 *
+	 * @return Current SpigotMC version.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public String getSpigotVersion() {
+		return spigotVersion;
+	}
 
 }

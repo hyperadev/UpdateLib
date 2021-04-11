@@ -27,28 +27,50 @@ import java.net.URL;
 
 public class UpdateChecker {
 
-    private static final String URL_BASE = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=";
+	private static final String URL_BASE = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=";
 
-    public UpdateResponse check(long resourceId, String currentVersion, int timeout) throws Exception {
-        URL url = new URL(URL_BASE + resourceId);
+	/**
+	 * Check for an update. - Used internally by UpdateLib.
+	 *
+	 * @param resourceId     The ID of the SpigotMC resource.
+	 * @param currentVersion The current version of the plugin.
+	 * @param timeout        How long we should wait before timing out the connection or read.
+	 *
+	 * @return Update response.
+	 * @throws Exception Any errors that occur while checking for an update.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public UpdateResponse check(long resourceId, String currentVersion, int timeout) throws Exception {
+		URL url = new URL(URL_BASE + resourceId);
 
-        HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
-        httpsURLConnection.setConnectTimeout(timeout);
-        httpsURLConnection.setReadTimeout(timeout);
+		HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
+		httpsURLConnection.setConnectTimeout(timeout);
+		httpsURLConnection.setReadTimeout(timeout);
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream()));
-        JSONObject json = (JSONObject) JSONValue.parse(readAll(bufferedReader));
-        String spigotVersion = (String) json.get("current_version");
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream()));
+		JSONObject json = (JSONObject) JSONValue.parse(readAll(bufferedReader));
+		String spigotVersion = (String) json.get("current_version");
 
-        if(null == spigotVersion) return null;
-        return new UpdateResponse(!currentVersion.equalsIgnoreCase(spigotVersion), currentVersion, spigotVersion);
-    }
+		if(null == spigotVersion)
+			return null;
+		return new UpdateResponse(!currentVersion.equalsIgnoreCase(spigotVersion), currentVersion, spigotVersion);
+	}
 
-    private String readAll(BufferedReader bufferedReader) throws Exception {
-        StringBuilder stringBuilder = new StringBuilder();
-        String line;
-        while((line = bufferedReader.readLine()) != null) stringBuilder.append(line).append("\n");
-        return stringBuilder.toString();
-    }
+	/**
+	 * Read all from a BufferedReader and return it as a string.
+	 *
+	 * @param bufferedReader BufferedReader to read from.
+	 *
+	 * @return Contents of reader.
+	 * @throws Exception Any errors that occur during execution.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	private String readAll(BufferedReader bufferedReader) throws Exception {
+		StringBuilder stringBuilder = new StringBuilder();
+		String line;
+		while((line = bufferedReader.readLine()) != null)
+			stringBuilder.append(line).append("\n");
+		return stringBuilder.toString();
+	}
 
 }

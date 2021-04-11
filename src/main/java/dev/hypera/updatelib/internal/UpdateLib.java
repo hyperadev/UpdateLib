@@ -20,82 +20,107 @@ import dev.hypera.updatelib.internal.tasks.UpdateChecker;
 import dev.hypera.updatelib.internal.tasks.UpdateTask;
 
 import java.util.Timer;
+import java.util.function.Consumer;
 
 public class UpdateLib {
 
-    private final long resourceId;
-    private final String currentVersion;
-    private final int connectionTimeout;
+	private final static String version = "2.1.0-SNAPSHOT";
 
-    private long lastCheck = 0L;
-    private UpdateResponse lastResponse = null;
+	private final long resourceId;
+	private final String currentVersion;
+	private final int connectionTimeout;
+	private final Consumer<UpdateResponse> consumer;
 
-    public UpdateLib(long resourceId, String currentVersion, boolean repeatingChecksEnabled, long checkInterval, int connectionTimeout) {
-        this.resourceId = resourceId;
-        this.currentVersion = currentVersion;
-        this.connectionTimeout = connectionTimeout;
+	private long lastCheck = 0L;
+	private UpdateResponse lastResponse = null;
 
-        Thread thread = new Thread(() -> {
-            try {
-                checkNow();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+	public UpdateLib(long resourceId, String currentVersion, boolean repeatingChecksEnabled, long checkInterval, int connectionTimeout, Consumer<UpdateResponse> consumer) {
+		this.resourceId = resourceId;
+		this.currentVersion = currentVersion;
+		this.connectionTimeout = connectionTimeout;
+		this.consumer = consumer;
 
-        thread.setName("UpdateLib-" + thread.getId());
-        thread.start();
+		Thread thread = new Thread(() -> {
+			try {
+				checkNow();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		});
 
-        if(repeatingChecksEnabled) {
-            new Timer().schedule(new UpdateTask(resourceId, currentVersion, connectionTimeout, this), checkInterval);
-        }
-    }
+		thread.setName("UpdateLib-" + thread.getId());
+		thread.start();
 
-    /**
-     * Checks for a update now.
-     *
-     * @return Response (instance of {@link UpdateResponse}).
-     * @throws Exception Any errors that occurred while checking.
-     */
-    public UpdateResponse checkNow() throws Exception {
-        lastCheck = System.currentTimeMillis();
-        lastResponse = new UpdateChecker().check(resourceId, currentVersion, connectionTimeout);
-        return lastResponse;
-    }
+		if(repeatingChecksEnabled) {
+			new Timer().schedule(new UpdateTask(resourceId, currentVersion, connectionTimeout, consumer, this), checkInterval);
+		}
+	}
 
-    /**
-     * Get last {@link UpdateResponse} stored - If UpdateLib hasn't checked for updates yet, this will return null.
-     *
-     * @return Last {@link UpdateResponse} stored.
-     */
-    public UpdateResponse getLastResponse() {
-        return lastResponse;
-    }
+	/**
+	 * Checks for a update now.
+	 *
+	 * @return Response (instance of {@link UpdateResponse}).
+	 * @throws Exception Any errors that occurred while checking.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public UpdateResponse checkNow() throws Exception {
+		lastCheck = System.currentTimeMillis();
+		lastResponse = new UpdateChecker().check(resourceId, currentVersion, connectionTimeout);
+		if(null != consumer)
+			consumer.accept(getLastResponse());
+		return lastResponse;
+	}
 
-    /**
-     * Get the last time UpdateLib checked for an update.
-     * @return Last time in milliseconds.
-     */
-    public long getLastCheckTime() {
-        return lastCheck;
-    }
+	/**
+	 * Get last {@link UpdateResponse} stored - If UpdateLib hasn't checked for updates yet, this will return null.
+	 *
+	 * @return Last {@link UpdateResponse} stored.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public UpdateResponse getLastResponse() {
+		return lastResponse;
+	}
 
-    /**
-     * Set last check time. - Used internally by UpdateLib.
-     *
-     * @param lastCheck Last check time in milliseconds.
-     */
-    public void setLastCheck(long lastCheck) {
-        this.lastCheck = lastCheck;
-    }
+	/**
+	 * Set last response. - Used internally by UpdateLib.
+	 *
+	 * @param lastResponse Last response.
+	 *
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public void setLastResponse(UpdateResponse lastResponse) {
+		this.lastResponse = lastResponse;
+	}
 
-    /**
-     * Set last response. - Used internally by UpdateLib.
-     *
-     * @param lastResponse Last response.
-     */
-    public void setLastResponse(UpdateResponse lastResponse) {
-        this.lastResponse = lastResponse;
-    }
+	/**
+	 * Get the last time UpdateLib checked for an update.
+	 *
+	 * @return Last time in milliseconds.
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public long getLastCheckTime() {
+		return lastCheck;
+	}
+
+	/**
+	 * Set last check time. - Used internally by UpdateLib.
+	 *
+	 * @param lastCheck Last check time in milliseconds.
+	 *
+	 * @since 2.0.0-SNAPSHOT
+	 */
+	public void setLastCheck(long lastCheck) {
+		this.lastCheck = lastCheck;
+	}
+
+	/**
+	 * Get UpdateLib version.
+	 *
+	 * @return Version.
+	 * @since 2.1.0-SNAPSHOT
+	 */
+	public static String getVersion() {
+		return version;
+	}
 
 }

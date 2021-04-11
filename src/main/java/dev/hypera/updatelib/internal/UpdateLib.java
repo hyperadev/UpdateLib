@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 
 public class UpdateLib {
 
-	private final static String version = "2.1.0-SNAPSHOT";
+	private final static String version = "2.1.1-SNAPSHOT";
 
 	private final long resourceId;
 	private final String currentVersion;

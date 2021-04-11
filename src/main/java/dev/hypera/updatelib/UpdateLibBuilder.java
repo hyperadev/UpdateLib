@@ -59,8 +59,9 @@ public class UpdateLibBuilder {
 	 * @see #setCheckInterval(long)
 	 * @since 2.0.0-SNAPSHOT
 	 */
-	public void setRepeatingChecksEnabled(boolean enabled) {
+	public UpdateLibBuilder setRepeatingChecksEnabled(boolean enabled) {
 		this.repeatingChecksEnabled = enabled;
+		return this;
 	}
 
 	/**
@@ -71,8 +72,9 @@ public class UpdateLibBuilder {
 	 * @see #setRepeatingChecksEnabled(boolean)
 	 * @since 2.0.0-SNAPSHOT
 	 */
-	public void setCheckInterval(long interval) {
+	public UpdateLibBuilder setCheckInterval(long interval) {
 		this.checkInterval = interval;
+		return this;
 	}
 
 	/**
@@ -82,8 +84,9 @@ public class UpdateLibBuilder {
 	 *
 	 * @since 2.0.0-SNAPSHOT
 	 */
-	public void setConnectionTimeout(int timeout) {
+	public UpdateLibBuilder setConnectionTimeout(int timeout) {
 		this.connectionTimeout = timeout;
+		return this;
 	}
 
 	/**
@@ -93,8 +96,9 @@ public class UpdateLibBuilder {
 	 *
 	 * @since 2.1.0-SNAPSHOT
 	 */
-	public void setConsumer(Consumer<UpdateResponse> consumer) {
+	public UpdateLibBuilder setConsumer(Consumer<UpdateResponse> consumer) {
 		this.consumer = consumer;
+		return this;
 	}
 
 	/**

@@ -17,6 +17,7 @@
 package dev.hypera.updatelib.internal.tasks;
 
 import dev.hypera.updatelib.internal.UpdateResponse;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -53,7 +54,7 @@ public class UpdateChecker {
 
 		if(null == spigotVersion)
 			return null;
-		return new UpdateResponse(!currentVersion.equalsIgnoreCase(spigotVersion), currentVersion, spigotVersion);
+		return new UpdateResponse(new ComparableVersion(currentVersion).compareTo(new ComparableVersion(spigotVersion)) < 0, currentVersion, spigotVersion);
 	}
 
 	/**

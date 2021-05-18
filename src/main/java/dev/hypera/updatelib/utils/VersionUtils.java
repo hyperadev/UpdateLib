@@ -54,8 +54,8 @@ public class VersionUtils {
 		Check.notNull("new version", newVersion);
 		Check.notNull("current version", currentVersion);
 
-		if(newVersion.equals(currentVersion))
-			return VersionChange.NONE;
+//		if(newVersion.equals(currentVersion))
+//			return VersionChange.NONE;
 
 		Matcher matcher = versionScheme.getPattern().matcher(newVersion);
 		Matcher currentMatcher = versionScheme.getPattern().matcher(currentVersion);
@@ -111,8 +111,11 @@ public class VersionUtils {
 	 * @since 3.0.0-SNAPSHOT
 	 */
 	private static boolean safeCheck(String currentGroup, String newGroup) {
-		if(null == currentGroup || currentGroup.equals("") || null == newGroup || newGroup.equals(""))
+		if(isEmpty(currentGroup) && isEmpty(newGroup))
 			return false;
+
+		if(isEmpty(currentGroup) || isEmpty(newGroup))
+			return true;
 
 		int currentInt;
 		int newInt;
@@ -125,6 +128,12 @@ public class VersionUtils {
 		}
 
 		return newInt > currentInt;
+	}
+
+	private static boolean isEmpty(String one) {
+		if(null == one) return true;
+		if(one.equals("")) return true;
+		return false;
 	}
 
 	@Internal

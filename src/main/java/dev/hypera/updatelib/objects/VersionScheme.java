@@ -20,7 +20,9 @@ import java.util.regex.Pattern;
 
 public enum VersionScheme {
 
-	BASIC("MAJOR.MINOR", "^(v?)(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?$"), SEMANTIC("MAJOR.MINOR.PATCH - https://semver.org/", "^(v?)(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)\\.(?<patch>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"), CALENDAR("YYYY-MM-DD - https://calver.org", "^(v?)(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})$");
+	BASIC("MAJOR.MINOR", "^(v?)(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?$"),
+	SEMANTIC("MAJOR.MINOR.PATCH - https://semver.org/", "^(v?)(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)\\.(?<patch>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"),
+	CALENDAR("YYYY-MM-DD - https://calver.org", "^(v?)(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})$");
 
 	private final String description;
 	private final Pattern pattern;

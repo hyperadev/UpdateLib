@@ -1,7 +1,7 @@
 name: Publish Snapshot
 on:
   push:
-    branches: [main]
+    branches: [ development ]
 jobs:
   publish:
     runs-on: ubuntu-latest

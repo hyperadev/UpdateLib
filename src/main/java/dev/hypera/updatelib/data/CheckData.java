@@ -14,48 +14,61 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package dev.hypera.updatelib.internal;
+package dev.hypera.updatelib.data;
 
-public class UpdateResponse {
+import dev.hypera.updatelib.annotations.Internal;
 
-	private final boolean updateAvailable;
+@Internal
+public class CheckData {
+
+	private final long resourceId;
 	private final String currentVersion;
-	private final String spigotVersion;
-
-	public UpdateResponse(boolean updateAvailable, String currentVersion, String spigotVersion) {
-		this.updateAvailable = updateAvailable;
-		this.currentVersion = currentVersion;
-		this.spigotVersion = spigotVersion;
-	}
+	private final int timeout;
 
 	/**
-	 * Is an update available?
+	 * CheckData Constructor - Used internally by UpdateLib.
 	 *
-	 * @return Update available.
-	 * @since 2.0.0-SNAPSHOT
+	 * @param resourceId     Resource ID.
+	 * @param currentVersion Current resource version.
+	 * @param timeout        Connection timeout.
+	 *
+	 * @since 3.0.0-SNAPSHOT
 	 */
-	public boolean isUpdateAvailable() {
-		return updateAvailable;
+	public CheckData(long resourceId, String currentVersion, int timeout) {
+		this.resourceId = resourceId;
+		this.currentVersion = currentVersion;
+		this.timeout = timeout;
 	}
 
 	/**
-	 * Get the current version of the plugin.
+	 * Get resource ID.
+	 *
+	 * @return Resource ID.
+	 * @since 3.0.0-SNAPSHOT
+	 */
+	public long getResourceId() {
+		return resourceId;
+	}
+
+	/**
+	 * Get current version.
 	 *
 	 * @return Current version.
-	 * @since 2.0.0-SNAPSHOT
+	 * @since 3.0.0-SNAPSHOT
 	 */
 	public String getCurrentVersion() {
 		return currentVersion;
 	}
 
 	/**
-	 * Get the current version of the plugin on SpigotMC.
+	 * Get connection timeout.
 	 *
-	 * @return Current SpigotMC version.
-	 * @since 2.0.0-SNAPSHOT
+	 * @return Connection timeout in milliseconds.
+	 * @since 3.0.0-SNAPSHOT
 	 */
-	public String getSpigotVersion() {
-		return spigotVersion;
+	public int getTimeout() {
+		return timeout;
 	}
+
 
 }

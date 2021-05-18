@@ -16,33 +16,51 @@
 
 package dev.hypera.updatelib;
 
-import dev.hypera.updatelib.internal.UpdateLib;
-import dev.hypera.updatelib.internal.UpdateResponse;
+import dev.hypera.updatelib.annotations.Builder;
+import dev.hypera.updatelib.checkers.UpdateChecker;
+import dev.hypera.updatelib.checkers.impl.SpigotUpdateChecker;
+import dev.hypera.updatelib.objects.UpdateStatus;
+import dev.hypera.updatelib.utils.Check;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-@SuppressWarnings("unused")
+@Builder
 public class UpdateLibBuilder {
 
 	private final long resourceId;
 	private final String currentVersion;
 
 	private boolean repeatingChecksEnabled = true;
-	private long checkInterval = 2 * (60 * (60 * 1000)); // 2 Hours
-	private int connectionTimeout = 5000; // 5 Seconds
+	private long checkInterval = 2 * (60 * (60 * 1000)); // Defaults to 2 hours.
+	private int connectionTimeout = 10000; // Defaults to 10 seconds.
 
-	private Consumer<UpdateResponse> consumer = null;
+	/**
+	 * Defaults to using {@link SpigotUpdateChecker}.
+	 */
+	private UpdateChecker updateChecker = new SpigotUpdateChecker();
 
+	private Consumer<UpdateStatus> completeAction = null;
+	private Consumer<Throwable> errorHandler = null; // If error handler is not provided, stack traces will be printed by UpdateLib.
+
+
+	/**
+	 * UpdateLibBuilder Constructor - Used internally by UpdateLib.
+	 *
+	 * @param currentVersion Current version of the resource.
+	 * @param resourceId     Resource ID.
+	 */
 	private UpdateLibBuilder(String currentVersion, long resourceId) {
+		Check.notNull("currentVersion", currentVersion);
 		this.currentVersion = currentVersion;
 		this.resourceId = resourceId;
 	}
 
 	/**
-	 * Creates a new instance of {@link UpdateLibBuilder}.
+	 * Create a new instance of {@link UpdateLibBuilder}
 	 *
 	 * @param currentVersion Current version of the resource.
-	 * @param resourceId     SpigotMC Resource Id.
+	 * @param resourceId     Resource ID.
 	 *
 	 * @return Instance of {@link UpdateLibBuilder}
 	 * @since 2.0.0-SNAPSHOT
@@ -52,11 +70,11 @@ public class UpdateLibBuilder {
 	}
 
 	/**
-	 * Should UpdateLib keep checking for updates? (Time defined by checkInterval)
+	 * Sets if UpdateLib should check for updates periodically.
 	 *
-	 * @param enabled Repeating checks enabled.
+	 * @param enabled If UpdateLib should check for updates periodically.
 	 *
-	 * @see #setCheckInterval(long)
+	 * @return {@link UpdateLibBuilder}
 	 * @since 2.0.0-SNAPSHOT
 	 */
 	public UpdateLibBuilder setRepeatingChecksEnabled(boolean enabled) {
@@ -65,23 +83,26 @@ public class UpdateLibBuilder {
 	}
 
 	/**
-	 * How often should UpdateLib check for updates? (Only works if repeatingChecksEnabled is true)
+	 * Sets how often UpdateLib should check for updates? This is only needed if 'repeatingChecksEnabled' is true.
 	 *
-	 * @param interval Interval in milliseconds.
+	 * @param time Time.
+	 * @param unit TimeUnit.
 	 *
+	 * @return {@link UpdateLibBuilder}
 	 * @see #setRepeatingChecksEnabled(boolean)
 	 * @since 2.0.0-SNAPSHOT
 	 */
-	public UpdateLibBuilder setCheckInterval(long interval) {
-		this.checkInterval = interval;
+	public UpdateLibBuilder setCheckInterval(long time, TimeUnit unit) {
+		this.checkInterval = unit.toMillis(time);
 		return this;
 	}
 
 	/**
-	 * After how many milliseconds should we timeout the request to SpigotMC's API?
+	 * Sets the amount of milliseconds UpdateLib should wait before timing out on requests.
 	 *
 	 * @param timeout Timeout in milliseconds.
 	 *
+	 * @return {@link UpdateLibBuilder}
 	 * @since 2.0.0-SNAPSHOT
 	 */
 	public UpdateLibBuilder setConnectionTimeout(int timeout) {
@@ -90,25 +111,52 @@ public class UpdateLibBuilder {
 	}
 
 	/**
-	 * Sets a consumer to run after UpdateLib has checked for an update.
+	 * Sets the {@link UpdateChecker} to be used by UpdateLib to check for updates.
 	 *
-	 * @param consumer Consumer to run after checking for an update.
+	 * @param updateChecker Instance of an {@link UpdateChecker}
 	 *
-	 * @since 2.1.0-SNAPSHOT
+	 * @return {@link UpdateLibBuilder}
+	 * @since 3.0.0-SNAPSHOT
 	 */
-	public UpdateLibBuilder setConsumer(Consumer<UpdateResponse> consumer) {
-		this.consumer = consumer;
+	public UpdateLibBuilder setUpdateChecker(UpdateChecker updateChecker) {
+		this.updateChecker = updateChecker;
 		return this;
 	}
 
 	/**
-	 * Builds a new instance of {@link UpdateLib}.
+	 * Sets an action to run after UpdateLib has checked for an update.
+	 *
+	 * @param action Consumer to run after checking for an update.
+	 *
+	 * @return {@link UpdateLibBuilder}
+	 * @since 2.1.0-SNAPSHOT
+	 */
+	public UpdateLibBuilder setCompleteAction(Consumer<UpdateStatus> action) {
+		this.completeAction = action;
+		return this;
+	}
+
+	/**
+	 * Sets an consumer to run if UpdateLib encounters an exception.
+	 *
+	 * @param handler Error handler.
+	 *
+	 * @return {@link UpdateLibBuilder}
+	 * @since 3.0.0-SNAPSHOT
+	 */
+	public UpdateLibBuilder setErrorHandler(Consumer<Throwable> handler) {
+		this.errorHandler = handler;
+		return this;
+	}
+
+	/**
+	 * Builds a new instance of {@link UpdateLib}
 	 *
 	 * @return Instance of {@link UpdateLib}
 	 * @since 2.0.0-SNAPSHOT
 	 */
 	public UpdateLib build() {
-		return new UpdateLib(resourceId, currentVersion, repeatingChecksEnabled, checkInterval, connectionTimeout, consumer);
+		return new UpdateLib(resourceId, currentVersion, repeatingChecksEnabled, checkInterval, connectionTimeout, updateChecker, completeAction, errorHandler);
 	}
 
 }

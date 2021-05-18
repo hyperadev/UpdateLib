@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 public class UpdateLib {
 
-	private final static String VERSION = "3.0.0-SNAPSHOT"; // Current UpdateLib version.
+	private final static String VERSION = "3.1.0-SNAPSHOT"; // Current UpdateLib version.
 
 	private final long resourceId;
 	private final String currentVersion;

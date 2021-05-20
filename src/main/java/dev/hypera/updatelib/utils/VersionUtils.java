@@ -18,6 +18,7 @@ package dev.hypera.updatelib.utils;
 
 import dev.hypera.updatelib.annotations.Internal;
 import dev.hypera.updatelib.exceptions.VersionSchemeException;
+import dev.hypera.updatelib.objects.UpdateStatus;
 import dev.hypera.updatelib.objects.VersionScheme;
 
 import java.util.Arrays;
@@ -46,16 +47,16 @@ public class VersionUtils {
 	 * @param newVersion     New/Distributed version.
 	 * @param currentVersion Current resource version.
 	 *
-	 * @return {@link VersionChange}
+	 * @return {@link UpdateStatus.Status}
 	 * @since 3.0.0-SNAPSHOT
 	 */
-	public static VersionChange compare(VersionScheme versionScheme, String newVersion, String currentVersion) {
-		Check.notNull("version scheme", versionScheme);
-		Check.notNull("new version", newVersion);
-		Check.notNull("current version", currentVersion);
+	public static UpdateStatus.Status compare(VersionScheme versionScheme, String newVersion, String currentVersion) {
+		Check.notNull(new String[] { "version scheme", "new version", "current version" }, versionScheme, newVersion, currentVersion);
 
-//		if(newVersion.equals(currentVersion))
-//			return VersionChange.NONE;
+		if(newVersion.equals(currentVersion))
+			return UpdateStatus.Status.UNAVAILABLE;
+		else if(versionScheme.equals(VersionScheme.CALENDAR))
+			return UpdateStatus.Status.AVAILABLE;
 
 		Matcher matcher = versionScheme.getPattern().matcher(newVersion);
 		Matcher currentMatcher = versionScheme.getPattern().matcher(currentVersion);
@@ -63,42 +64,12 @@ public class VersionUtils {
 		if(!matcher.find() || !currentMatcher.find())
 			throw new VersionSchemeException("Version does not matcher version scheme.");
 
-		switch(versionScheme) {
-			case BASIC:
-				if(safeCheck(currentMatcher.group("major"), matcher.group("major")))
-					return VersionChange.MAJOR;
-				if(safeCheck(currentMatcher.group("minor"), matcher.group("minor")))
-					return VersionChange.MINOR;
-				if(safeCheck(currentMatcher.group("prerelease"), matcher.group("prerelease")))
-					return VersionChange.PRE_RELEASE;
-				return VersionChange.NONE;
-
-			case SEMANTIC:
-				if(safeCheck(currentMatcher.group("major"), matcher.group("major")))
-					return VersionChange.MAJOR;
-				if(safeCheck(currentMatcher.group("minor"), matcher.group("minor")))
-					return VersionChange.MINOR;
-				if(safeCheck(currentMatcher.group("patch"), matcher.group("patch")))
-					return VersionChange.PATCH;
-				if(safeCheck(currentMatcher.group("prerelease"), matcher.group("prerelease")))
-					return VersionChange.PRE_RELEASE;
-				if(safeCheck(currentMatcher.group("buildmetadata"), matcher.group("buildmetadata")))
-					return VersionChange.METADATA;
-				return VersionChange.NONE;
-
-			case CALENDAR:
-				if(safeCheck(currentMatcher.group("year"), matcher.group("year")))
-					return VersionChange.YEAR;
-				if(safeCheck(currentMatcher.group("month"), matcher.group("month")))
-					return VersionChange.MONTH;
-				if(safeCheck(currentMatcher.group("day"), matcher.group("day")))
-					return VersionChange.DAY;
-				return VersionChange.NONE;
-
-			default:
-				throw new VersionSchemeException("Unknown version scheme");
+		for(int i = 1; i < Math.max(currentMatcher.groupCount(), matcher.groupCount()); i++) {
+			if(safeCheck(currentMatcher.group(i), matcher.group(i)))
+				return UpdateStatus.Status.fromNumber(versionScheme, i);
 		}
 
+		return UpdateStatus.Status.AVAILABLE;
 	}
 
 	/**
@@ -131,14 +102,9 @@ public class VersionUtils {
 	}
 
 	private static boolean isEmpty(String one) {
-		if(null == one) return true;
-		if(one.equals("")) return true;
-		return false;
-	}
-
-	@Internal
-	public enum VersionChange {
-		NONE, MAJOR, MINOR, PATCH, PRE_RELEASE, METADATA, YEAR, MONTH, DAY
+		if(null == one)
+			return true;
+		return one.equals("");
 	}
 
 }

@@ -77,7 +77,24 @@ public class UpdateStatus {
 	}
 
 	public enum Status {
-		AVAILABLE, MAJOR_AVAILABLE, MINOR_AVAILABLE, UNAVAILABLE, FAILED
+		MAJOR_AVAILABLE,
+		MINOR_AVAILABLE,
+		AVAILABLE,
+		UNAVAILABLE,
+		FAILED;
+
+		public static Status fromNumber(VersionScheme scheme, int i) {
+			if(scheme.equals(VersionScheme.CALENDAR)) return AVAILABLE;
+
+			switch(i) {
+				case 2:
+					return MAJOR_AVAILABLE;
+				case 3:
+					return MINOR_AVAILABLE;
+				default:
+					return AVAILABLE;
+			}
+		}
 	}
 
 }

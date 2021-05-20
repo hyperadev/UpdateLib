@@ -26,6 +26,7 @@ public class Check {
 	 *
 	 * @param name   Name of the object.
 	 * @param object Object.
+	 *
 	 * @since 3.0.0-SNAPSHOT
 	 */
 	public static void notNull(String name, Object object) {
@@ -34,9 +35,25 @@ public class Check {
 	}
 
 	/**
+	 * Check if objects are null, if so, throw an IllegalArgumentException.
+	 *
+	 * @param names   Object names.
+	 * @param objects Objects to check.
+	 *
+	 * @since 3.1.2-SNAPSHOT
+	 */
+	public static void notNull(String[] names, Object... objects) {
+		for(int i = 0; i < objects.length; i++) {
+			if(null == objects[i])
+				fail(names[i] + " cannot be null.");
+		}
+	}
+
+	/**
 	 * Throw an IllegalArgumentException.
 	 *
 	 * @param message Message.
+	 *
 	 * @since 3.0.0-SNAPSHOT
 	 */
 	private static void fail(String message) {

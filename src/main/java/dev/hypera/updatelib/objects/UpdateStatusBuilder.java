@@ -95,30 +95,7 @@ public class UpdateStatusBuilder {
 			scheme = versionScheme.get();
 		}
 
-		VersionUtils.VersionChange change = VersionUtils.compare(scheme, distributedVersion, currentVersion);
-
-		return new UpdateStatus(distributedVersion, currentVersion, changeToStatus(change));
-	}
-
-	/**
-	 * Converts {@link VersionUtils.VersionChange} to {@link UpdateStatus.Status}
-	 *
-	 * @param change VersionChange.
-	 *
-	 * @return Status.
-	 * @since 3.0.0-SNAPSHOT
-	 */
-	private UpdateStatus.Status changeToStatus(VersionUtils.VersionChange change) {
-		if(change.equals(VersionUtils.VersionChange.NONE))
-			return UpdateStatus.Status.UNAVAILABLE;
-
-		if(change.equals(VersionUtils.VersionChange.MAJOR))
-			return UpdateStatus.Status.MAJOR_AVAILABLE;
-
-		if(change.equals(VersionUtils.VersionChange.MINOR))
-			return UpdateStatus.Status.MINOR_AVAILABLE;
-
-		return UpdateStatus.Status.AVAILABLE;
+		return new UpdateStatus(distributedVersion, currentVersion, VersionUtils.compare(scheme, distributedVersion, currentVersion));
 	}
 
 }

@@ -38,6 +38,7 @@ public class SpigotUpdateChecker implements UpdateChecker {
 	 * Check for an update using SpigotMC's API.
 	 *
 	 * @param data Check data.
+	 *
 	 * @return {@link UpdateStatus}
 	 * @throws Exception Any exceptions that occur while checking for updates.
 	 * @since 3.0.0-SNAPSHOT

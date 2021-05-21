@@ -22,7 +22,7 @@
 
     <groupId>dev.hypera</groupId>
     <artifactId>UpdateLib</artifactId>
-    <version>3.1.2-SNAPSHOT</version>
+    <version>3.1.2</version>
     <packaging>jar</packaging>
 
     <name>UpdateLib</name>

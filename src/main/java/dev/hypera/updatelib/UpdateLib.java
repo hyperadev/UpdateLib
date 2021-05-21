@@ -20,7 +20,6 @@ import dev.hypera.updatelib.annotations.RunAsync;
 import dev.hypera.updatelib.checkers.UpdateChecker;
 import dev.hypera.updatelib.data.CheckData;
 import dev.hypera.updatelib.objects.UpdateStatus;
-import dev.hypera.updatelib.objects.UpdateStatusBuilder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +27,7 @@ import java.util.function.Consumer;
 
 public class UpdateLib {
 
-	private final static String VERSION = "3.1.2-SNAPSHOT"; // Current UpdateLib version.
+	private final static String VERSION = "3.1.2"; // Current UpdateLib version.
 
 	private final long resourceId;
 	private final String currentVersion;

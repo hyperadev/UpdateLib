@@ -1,5 +1,5 @@
 # UpdateLib
-A simple update library for SpigotMC resources.
+A simple update checking library for Minecraft Plugins.
 
 ![GitHub](https://img.shields.io/github/license/HyperaOfficial/UpdateLib?color=2155cc&&style=for-the-badge)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/HyperaOfficial/UpdateLib?color=%232155cc&&label=Version&&style=for-the-badge)

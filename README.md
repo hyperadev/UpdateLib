@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://repository-images.githubusercontent.com/352616465/37903180-be2b-11eb-865a-a741c82c5c4f" alt="UpdateLib" width="25%">
+  <img src="https://i.hypera.dev/assets/UpdateLib.svg" alt="UpdateLib" width="25%">
 </h1>
 
 A simple update checking library for Minecraft Plugins.

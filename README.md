@@ -1,4 +1,7 @@
-# UpdateLib
+<h1 align="center">
+  <img src="https://repository-images.githubusercontent.com/352616465/37903180-be2b-11eb-865a-a741c82c5c4f" alt="UpdateLib" width="25%">
+</h1>
+
 A simple update checking library for Minecraft Plugins.
 
 ![GitHub](https://img.shields.io/github/license/HyperaOfficial/UpdateLib?color=2155cc&&style=for-the-badge)

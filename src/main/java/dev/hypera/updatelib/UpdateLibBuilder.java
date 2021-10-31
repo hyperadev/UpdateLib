@@ -1,162 +1,152 @@
 /*
+ * UpdateLib - A simple update checking library for Minecraft Plugins.
  * Copyright (c) 2021 Joshua Sing <joshua@hypera.dev>
  *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package dev.hypera.updatelib;
 
-import dev.hypera.updatelib.annotations.Builder;
-import dev.hypera.updatelib.checkers.UpdateChecker;
-import dev.hypera.updatelib.checkers.impl.SpigotUpdateChecker;
+import dev.hypera.updatelib.comparators.IVersionComparator;
+import dev.hypera.updatelib.comparators.impl.SemanticVersioningComparator;
 import dev.hypera.updatelib.objects.UpdateStatus;
-import dev.hypera.updatelib.utils.Check;
-
+import dev.hypera.updatelib.resolvers.IVersionResolver;
+import dev.hypera.updatelib.resolvers.impl.LegacySpigotVersionResolver;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.jetbrains.annotations.NotNull;
 
-@Builder
+/**
+ * UpdateLib builder
+ *
+ * @author Joshua Sing <joshua@hypera.dev>
+ */
 public class UpdateLibBuilder {
 
-	private final long resourceId;
-	private final String currentVersion;
-
-	private boolean repeatingChecksEnabled = true;
-	private long checkInterval = 2 * (60 * (60 * 1000)); // Defaults to 2 hours.
-	private int connectionTimeout = 10000; // Defaults to 10 seconds.
-
-	/**
-	 * Defaults to using {@link SpigotUpdateChecker}.
-	 */
-	private UpdateChecker updateChecker = new SpigotUpdateChecker();
-
-	private Consumer<UpdateStatus> completeAction = null;
-	private Consumer<Throwable> errorHandler = null; // If error handler is not provided, stack traces will be printed by UpdateLib.
-
+	private long resourceId = -1;
+	private String currentVersion = null;
+	private boolean repeatingChecks = true;
+	private long checkInterval = TimeUnit.HOURS.toMillis(2);
+	private int connectionTimeout = 10000;
+	private IVersionResolver versionResolver = new LegacySpigotVersionResolver();
+	private IVersionComparator versionComparator = new SemanticVersioningComparator();
+	private Consumer<UpdateStatus> statusHandler = status -> {};
 
 	/**
-	 * UpdateLibBuilder Constructor - Used internally by UpdateLib.
-	 *
-	 * @param currentVersion Current version of the resource.
-	 * @param resourceId     Resource ID.
+	 * Creates a new {@link UpdateLibBuilder} instance.
+	 * @return New {@link UpdateLibBuilder} instance.
 	 */
-	private UpdateLibBuilder(String currentVersion, long resourceId) {
-		Check.notNull("currentVersion", currentVersion);
-		this.currentVersion = currentVersion;
+	public static @NotNull UpdateLibBuilder create() {
+		return new UpdateLibBuilder();
+	}
+
+	/**
+	 * Sets the resource identifier. (required)
+	 * @param resourceId Resource identifier.
+	 * @return Current {@link UpdateLibBuilder} instance.
+	 */
+	public @NotNull UpdateLibBuilder resource(long resourceId) {
 		this.resourceId = resourceId;
-	}
-
-	/**
-	 * Create a new instance of {@link UpdateLibBuilder}
-	 *
-	 * @param currentVersion Current version of the resource.
-	 * @param resourceId     Resource ID.
-	 *
-	 * @return Instance of {@link UpdateLibBuilder}
-	 * @since 2.0.0-SNAPSHOT
-	 */
-	public static UpdateLibBuilder create(String currentVersion, long resourceId) {
-		return new UpdateLibBuilder(currentVersion, resourceId);
-	}
-
-	/**
-	 * Sets if UpdateLib should check for updates periodically.
-	 *
-	 * @param enabled If UpdateLib should check for updates periodically.
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @since 2.0.0-SNAPSHOT
-	 */
-	public UpdateLibBuilder setRepeatingChecksEnabled(boolean enabled) {
-		this.repeatingChecksEnabled = enabled;
 		return this;
 	}
 
 	/**
-	 * Sets how often UpdateLib should check for updates? This is only needed if 'repeatingChecksEnabled' is true.
-	 *
-	 * @param time Time.
-	 * @param unit TimeUnit.
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @see #setRepeatingChecksEnabled(boolean)
-	 * @since 2.0.0-SNAPSHOT
+	 * Sets the current version. (required)
+	 * @param version Current version.
+	 * @return Current {@link UpdateLibBuilder} instance.
 	 */
-	public UpdateLibBuilder setCheckInterval(long time, TimeUnit unit) {
-		this.checkInterval = unit.toMillis(time);
+	public @NotNull UpdateLibBuilder version(@NotNull String version) {
+		this.currentVersion = version;
 		return this;
 	}
 
 	/**
-	 * Sets the amount of milliseconds UpdateLib should wait before timing out on requests.
-	 *
-	 * @param timeout Timeout in milliseconds.
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @since 2.0.0-SNAPSHOT
+	 * Disable repeating update checks.
+	 * @return Current {@link UpdateLibBuilder} instance.
 	 */
-	public UpdateLibBuilder setConnectionTimeout(int timeout) {
+	public @NotNull UpdateLibBuilder disableRepeatingChecks() {
+		this.repeatingChecks = false;
+		return this;
+	}
+
+	/**
+	 * Sets the update check interval.
+	 * @param interval Interval.
+	 * @param unit Time unit.
+	 * @return Current {@link UpdateLibBuilder} instance.
+	 */
+	public @NotNull UpdateLibBuilder interval(long interval, @NotNull TimeUnit unit) {
+		this.checkInterval = unit.toMillis(interval);
+		return this;
+	}
+
+	/**
+	 * Sets the http connection timeout for UpdateLib.
+	 * @param timeout Connection/read timeout.
+	 * @return Current {@link UpdateLibBuilder} instance.
+	 */
+	public @NotNull UpdateLibBuilder timeout(int timeout) {
 		this.connectionTimeout = timeout;
 		return this;
 	}
 
 	/**
-	 * Sets the {@link UpdateChecker} to be used by UpdateLib to check for updates.
-	 *
-	 * @param updateChecker Instance of an {@link UpdateChecker}
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @since 3.0.0-SNAPSHOT
+	 * Sets the version resolver to be used.
+	 * @param versionResolver Version resolver.
+	 * @return Current {@link UpdateLibBuilder} instance.
 	 */
-	public UpdateLibBuilder setUpdateChecker(UpdateChecker updateChecker) {
-		this.updateChecker = updateChecker;
+	public @NotNull UpdateLibBuilder resolver(@NotNull IVersionResolver versionResolver) {
+		this.versionResolver = versionResolver;
 		return this;
 	}
 
 	/**
-	 * Sets an action to run after UpdateLib has checked for an update.
-	 *
-	 * @param action Consumer to run after checking for an update.
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @since 2.1.0-SNAPSHOT
+	 * Sets the version comparator to be used.
+	 * @param versionComparator Version comparator.
+	 * @return Current {@link UpdateLibBuilder} instance.
 	 */
-	public UpdateLibBuilder setCompleteAction(Consumer<UpdateStatus> action) {
-		this.completeAction = action;
+	public @NotNull UpdateLibBuilder comparator(@NotNull IVersionComparator versionComparator) {
+		this.versionComparator = versionComparator;
 		return this;
 	}
 
 	/**
-	 * Sets an consumer to run if UpdateLib encounters an exception.
-	 *
-	 * @param handler Error handler.
-	 *
-	 * @return {@link UpdateLibBuilder}
-	 * @since 3.0.0-SNAPSHOT
+	 * Sets the status handler.
+	 * @param statusHandler Status handler.
+	 * @return Current {@link UpdateLibBuilder} instance.
 	 */
-	public UpdateLibBuilder setErrorHandler(Consumer<Throwable> handler) {
-		this.errorHandler = handler;
+	public @NotNull UpdateLibBuilder handler(@NotNull Consumer<UpdateStatus> statusHandler) {
+		this.statusHandler = statusHandler;
 		return this;
 	}
 
 	/**
-	 * Builds a new instance of {@link UpdateLib}
-	 *
-	 * @return Instance of {@link UpdateLib}
-	 * @since 2.0.0-SNAPSHOT
+	 * Builds a new {@link UpdateLib} instance using the provided settings.
+	 * @return New {@link UpdateLib} instance.
+	 * @throws IllegalStateException if resourceId or currentVersion are not provided.
 	 */
-	public UpdateLib build() {
-		return new UpdateLib(resourceId, currentVersion, repeatingChecksEnabled, checkInterval, connectionTimeout, updateChecker, completeAction, errorHandler);
+	public @NotNull UpdateLib build() {
+		if (resourceId == -1L || null == currentVersion) {
+			throw new IllegalStateException("resourceId and currentVersion cannot be null.");
+		} else {
+			return new UpdateLib(resourceId, currentVersion, connectionTimeout, repeatingChecks, checkInterval, versionResolver, versionComparator, statusHandler);
+		}
 	}
 
 }

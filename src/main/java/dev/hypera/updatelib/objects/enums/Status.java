@@ -21,45 +21,28 @@
  * SOFTWARE.
  */
 
-package dev.hypera.updatelib.objects;
-
-import dev.hypera.updatelib.objects.enums.Status;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+package dev.hypera.updatelib.objects.enums;
 
 /**
- * Update status
+ * Status enum
  *
  * @author Joshua Sing <joshua@hypera.dev>
  */
-public class UpdateStatus {
+public enum Status {
 
-	public static final UpdateStatus DEFAULT = new UpdateStatus(null, null, Status.UNAVAILABLE);
+	MAJOR_AVAILABLE(true),
+	MINOR_AVAILABLE(true),
+	AVAILABLE(true),
+	UNAVAILABLE(false);
 
-	private final String currentVersion;
-	private final String distributedVersion;
-	private final Status status;
+	private final boolean available;
 
-	public UpdateStatus(@Nullable String currentVersion, @Nullable String distributedVersion, @NotNull Status status) {
-		this.currentVersion = currentVersion;
-		this.distributedVersion = distributedVersion;
-		this.status = status;
-	}
-
-	public @Nullable String getCurrentVersion() {
-		return currentVersion;
-	}
-
-	public @Nullable String getDistributedVersion() {
-		return distributedVersion;
-	}
-
-	public @NotNull Status getStatus() {
-		return status;
+	Status(boolean available) {
+		this.available = available;
 	}
 
 	public boolean isAvailable() {
-		return status.isAvailable();
+		return available;
 	}
 
 }

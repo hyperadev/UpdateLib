@@ -21,45 +21,25 @@
  * SOFTWARE.
  */
 
-package dev.hypera.updatelib.objects;
+package dev.hypera.updatelib.annotations;
 
-import dev.hypera.updatelib.objects.enums.Status;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Update status
+ * Annotation used for marking something as unstable.
  *
  * @author Joshua Sing <joshua@hypera.dev>
  */
-public class UpdateStatus {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Unstable {
 
-	public static final UpdateStatus DEFAULT = new UpdateStatus(null, null, Status.UNAVAILABLE);
-
-	private final String currentVersion;
-	private final String distributedVersion;
-	private final Status status;
-
-	public UpdateStatus(@Nullable String currentVersion, @Nullable String distributedVersion, @NotNull Status status) {
-		this.currentVersion = currentVersion;
-		this.distributedVersion = distributedVersion;
-		this.status = status;
-	}
-
-	public @Nullable String getCurrentVersion() {
-		return currentVersion;
-	}
-
-	public @Nullable String getDistributedVersion() {
-		return distributedVersion;
-	}
-
-	public @NotNull Status getStatus() {
-		return status;
-	}
-
-	public boolean isAvailable() {
-		return status.isAvailable();
-	}
+	/**
+	 * Reason why something is marked as unstable, if applicable.
+	 * @return Reason.
+	 */
+	String value() default "";
 
 }

@@ -21,45 +21,38 @@
  * SOFTWARE.
  */
 
-package dev.hypera.updatelib.objects;
+package dev.hypera.updatelib.comparators.impl;
 
+import dev.hypera.updatelib.comparators.IVersionComparator;
+import dev.hypera.updatelib.exceptions.VersionComparisonFailureException;
 import dev.hypera.updatelib.objects.enums.Status;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * Update status
+ * Calendar version comparator.
  *
  * @author Joshua Sing <joshua@hypera.dev>
  */
-public class UpdateStatus {
+public class CalendarVersioningComparator implements IVersionComparator {
 
-	public static final UpdateStatus DEFAULT = new UpdateStatus(null, null, Status.UNAVAILABLE);
-
-	private final String currentVersion;
-	private final String distributedVersion;
-	private final Status status;
-
-	public UpdateStatus(@Nullable String currentVersion, @Nullable String distributedVersion, @NotNull Status status) {
-		this.currentVersion = currentVersion;
-		this.distributedVersion = distributedVersion;
-		this.status = status;
+	/**
+	 * Compares two versions.
+	 * @param currentVersion Current version.
+	 * @param distributedVersion Distributed version.
+	 * @return Version status.
+	 * @throws VersionComparisonFailureException if something went wrong while comparing the two versions.
+	 */
+	@Override
+	public @NotNull Status compare(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
+		try {
+			return currentVersion.compareTo(distributedVersion) <= 0 ? Status.UNAVAILABLE : Status.AVAILABLE;
+		} catch (Exception ex) {
+			throw new VersionComparisonFailureException(ex);
+		}
 	}
 
-	public @Nullable String getCurrentVersion() {
-		return currentVersion;
-	}
-
-	public @Nullable String getDistributedVersion() {
-		return distributedVersion;
-	}
-
-	public @NotNull Status getStatus() {
-		return status;
-	}
-
-	public boolean isAvailable() {
-		return status.isAvailable();
+	public static void main(String[] args) {
+		System.out.println();
 	}
 
 }

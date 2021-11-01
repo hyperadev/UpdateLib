@@ -99,7 +99,7 @@ public class UpdateLib {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				String distributedVersion = versionResolver.getVersion(this, resourceId);
-				Status comparison = versionComparator.compare(currentVersion, distributedVersion);
+				Status comparison = versionComparator.compareVersions(currentVersion, distributedVersion);
 
 				lastStatus = new UpdateStatus(currentVersion, distributedVersion, comparison);
 				lastCheck = Instant.now().toEpochMilli();

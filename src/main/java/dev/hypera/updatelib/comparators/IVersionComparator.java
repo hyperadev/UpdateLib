@@ -25,9 +25,10 @@ package dev.hypera.updatelib.comparators;
 
 import dev.hypera.updatelib.exceptions.VersionComparisonFailureException;
 import dev.hypera.updatelib.objects.enums.Status;
+import java.util.Comparator;
 import org.jetbrains.annotations.NotNull;
 
-public interface IVersionComparator {
+public interface IVersionComparator extends Comparator<String> {
 
 	/**
 	 * Compares two versions.
@@ -36,6 +37,20 @@ public interface IVersionComparator {
 	 * @return Version status.
 	 * @throws VersionComparisonFailureException if something goes wrong while comparing the two versions.
 	 */
-	@NotNull Status compare(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException;
+	@NotNull Status compareVersions(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException;
+
+	@Override
+	default int compare(String currentVersion, String distributedVersion) {
+		try {
+			if (currentVersion.equalsIgnoreCase(distributedVersion)) {
+				return 0;
+			}
+
+			Status status = compareVersions(currentVersion, distributedVersion);
+			return status.isAvailable() ? -1 : 1;
+		} catch (VersionComparisonFailureException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
 }

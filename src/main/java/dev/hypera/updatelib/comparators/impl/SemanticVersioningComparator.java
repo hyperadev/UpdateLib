@@ -45,7 +45,7 @@ public class SemanticVersioningComparator implements IVersionComparator {
 	 * @throws VersionComparisonFailureException if something went wrong while comparing the two versions.
 	 */
 	@Override
-	public @NotNull Status compare(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
+	public @NotNull Status compareVersions(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
 		try {
 			Semver current = new Semver(currentVersion, SemverType.LOOSE);
 			Semver distributed = new Semver(distributedVersion, SemverType.LOOSE);

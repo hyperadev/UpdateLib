@@ -43,7 +43,7 @@ public class CalendarVersioningComparator implements IVersionComparator {
 	 * @throws VersionComparisonFailureException if something went wrong while comparing the two versions.
 	 */
 	@Override
-	public @NotNull Status compare(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
+	public @NotNull Status compareVersions(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
 		try {
 			return currentVersion.compareTo(distributedVersion) <= 0 ? Status.UNAVAILABLE : Status.AVAILABLE;
 		} catch (Exception ex) {

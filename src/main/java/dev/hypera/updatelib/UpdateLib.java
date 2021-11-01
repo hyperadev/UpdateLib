@@ -42,7 +42,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
  */
 public class UpdateLib {
 
-	private static final String VERSION = "4.0.0-SNAPSHOT";
+	private static final String VERSION = "4.0.0";
 
 	private final long resourceId;
 	private final String currentVersion;

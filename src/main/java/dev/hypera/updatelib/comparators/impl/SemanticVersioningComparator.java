@@ -21,45 +21,49 @@
  * SOFTWARE.
  */
 
-package dev.hypera.updatelib.objects;
+package dev.hypera.updatelib.comparators.impl;
 
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.Semver.SemverType;
+import dev.hypera.updatelib.comparators.IVersionComparator;
+import dev.hypera.updatelib.exceptions.VersionComparisonFailureException;
 import dev.hypera.updatelib.objects.enums.Status;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * Update status
+ * Semantic version comparator.
  *
  * @author Joshua Sing <joshua@hypera.dev>
  */
-public class UpdateStatus {
+public class SemanticVersioningComparator implements IVersionComparator {
 
-	public static final UpdateStatus DEFAULT = new UpdateStatus(null, null, Status.UNAVAILABLE);
-
-	private final String currentVersion;
-	private final String distributedVersion;
-	private final Status status;
-
-	public UpdateStatus(@Nullable String currentVersion, @Nullable String distributedVersion, @NotNull Status status) {
-		this.currentVersion = currentVersion;
-		this.distributedVersion = distributedVersion;
-		this.status = status;
-	}
-
-	public @Nullable String getCurrentVersion() {
-		return currentVersion;
-	}
-
-	public @Nullable String getDistributedVersion() {
-		return distributedVersion;
-	}
-
-	public @NotNull Status getStatus() {
-		return status;
-	}
-
-	public boolean isAvailable() {
-		return status.isAvailable();
+	/**
+	 * Compares two semantic versions.
+	 * @param currentVersion Current version.
+	 * @param distributedVersion Distributed version.
+	 * @return Version status.
+	 * @throws VersionComparisonFailureException if something went wrong while comparing the two versions.
+	 */
+	@Override
+	public @NotNull Status compareVersions(@NotNull String currentVersion, @NotNull String distributedVersion) throws VersionComparisonFailureException {
+		try {
+			Semver current = new Semver(currentVersion, SemverType.LOOSE);
+			Semver distributed = new Semver(distributedVersion, SemverType.LOOSE);
+			if (distributed.isGreaterThan(current)) {
+				switch (distributed.diff(current)) {
+					case MAJOR:
+						return Status.MAJOR_AVAILABLE;
+					case MINOR:
+						return Status.MINOR_AVAILABLE;
+					default:
+						return Status.AVAILABLE;
+				}
+			} else {
+				return Status.UNAVAILABLE;
+			}
+		} catch (Exception ex) {
+			throw new VersionComparisonFailureException(ex);
+		}
 	}
 
 }

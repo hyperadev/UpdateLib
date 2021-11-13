@@ -1,134 +1,140 @@
 /*
+ * UpdateLib - A simple update checking library for Minecraft Plugins.
  * Copyright (c) 2021 Joshua Sing <joshua@hypera.dev>
  *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package dev.hypera.updatelib;
 
-import dev.hypera.updatelib.annotations.RunAsync;
-import dev.hypera.updatelib.checkers.UpdateChecker;
-import dev.hypera.updatelib.data.CheckData;
+import dev.hypera.updatelib.comparators.IVersionComparator;
+import dev.hypera.updatelib.exceptions.UpdateLibException;
 import dev.hypera.updatelib.objects.UpdateStatus;
-
+import dev.hypera.updatelib.objects.enums.Status;
+import dev.hypera.updatelib.resolvers.IVersionResolver;
+import java.time.Instant;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * UpdateLib main class
+ *
+ * @author Joshua Sing <joshua@hypera.dev>
+ */
 public class UpdateLib {
 
-	private final static String VERSION = "3.1.2"; // Current UpdateLib version.
+	private static final String VERSION = "4.0.0";
 
 	private final long resourceId;
 	private final String currentVersion;
-	private final int connectionTimeout;
+	private final int timeout;
+	private final IVersionResolver versionResolver;
+	private final IVersionComparator versionComparator;
+	private final Consumer<UpdateStatus> statusHandler;
 
-	private final UpdateChecker updateChecker;
-
-	private final Consumer<UpdateStatus> completeAction;
-	private final Consumer<Throwable> errorHandler;
-
-	private UpdateStatus lastStatus = null;
+	private UpdateStatus lastStatus = UpdateStatus.DEFAULT;
 	private long lastCheck = 0L;
 
-	/**
-	 * UpdateLib Constructor - Used internally by UpdateLib.
-	 *
-	 * @param resourceId             Resource ID.
-	 * @param currentVersion         Current version of the Resource.
-	 * @param repeatingChecksEnabled If UpdateLib should check for updates periodically.
-	 * @param interval               How often UpdateLib should check for updates.
-	 * @param connectionTimeout      The amount of milliseconds UpdateLib should wait before timing out on requests.
-	 * @param updateChecker          {@link UpdateChecker} to be used by UpdateLib to check for updates.
-	 * @param completeAction         Action to run after UpdateLib has checked for an update.
-	 * @param errorHandler           Consumer to run if UpdateLib encounters an exception.
-	 */
-	protected UpdateLib(long resourceId, String currentVersion, boolean repeatingChecksEnabled, long interval, int connectionTimeout, UpdateChecker updateChecker, Consumer<UpdateStatus> completeAction, Consumer<Throwable> errorHandler) {
+	@Internal
+	protected UpdateLib(long resourceId, String currentVersion, int timeout, boolean repeatingChecks, long interval, IVersionResolver versionResolver, IVersionComparator versionComparator, Consumer<UpdateStatus> statusHandler) {
 		this.resourceId = resourceId;
 		this.currentVersion = currentVersion;
-		this.connectionTimeout = connectionTimeout;
-		this.updateChecker = updateChecker;
-		this.completeAction = completeAction;
-		this.errorHandler = errorHandler;
+		this.timeout = timeout;
+		this.versionResolver = versionResolver;
+		this.versionComparator = versionComparator;
+		this.statusHandler = statusHandler;
 
-		Thread thread = new Thread(this::checkNow);
-		thread.setName("UpdateLib-" + thread.getId());
-		thread.start();
+		check();
 
-		if(repeatingChecksEnabled) {
+		if (repeatingChecks) {
 			new Timer().schedule(new TimerTask() {
 				@Override
 				public void run() {
-					checkNow();
+					check();
 				}
 			}, interval);
 		}
 	}
 
-
 	/**
-	 * Start an update check. It's recommended to only run this asynchronously as it may take time to fetch data from
-	 * the API.
-	 *
-	 * @return Response - Instance of {@link UpdateStatus}
-	 * @since 2.0.0-SNAPSHOT
+	 * Create a new {@link UpdateLibBuilder} instance.
+	 * @return New {@link UpdateLibBuilder} instance.
 	 */
-	@RunAsync
-	public UpdateStatus checkNow() {
-		try {
-			lastStatus = updateChecker.check(new CheckData(resourceId, currentVersion, connectionTimeout));
-			lastCheck = System.currentTimeMillis();
-			if(null != completeAction)
-				completeAction.accept(lastStatus);
-		} catch (Exception ex) {
-			if(null == errorHandler)
-				ex.printStackTrace();
-			else
-				errorHandler.accept(ex);
-		}
-
-		return lastStatus;
+	public static UpdateLibBuilder builder() {
+		return UpdateLibBuilder.create();
 	}
 
 	/**
-	 * Get last stored {@link UpdateStatus}. If UpdateLib hasn't checked for an update or the last check failed, this
-	 * will return null.
-	 *
-	 * @return Last stored {@link UpdateStatus}
-	 * @since 3.0.0-SNAPSHOT
+	 * Get the current version of UpdateLib.
+	 * @return Current UpdateLib version.
+	 */
+	public static String getVersion() {
+		return VERSION;
+	}
+
+	/**
+	 * Checks for an update.
+	 * @return {@link CompletableFuture<UpdateStatus>}
+	 */
+	public CompletableFuture<UpdateStatus> check() {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				String distributedVersion = versionResolver.getVersion(this, resourceId);
+				Status comparison = versionComparator.compareVersions(currentVersion, distributedVersion);
+
+				lastStatus = new UpdateStatus(currentVersion, distributedVersion, comparison);
+				lastCheck = Instant.now().toEpochMilli();
+
+				statusHandler.accept(lastStatus);
+				return lastStatus;
+			} catch (UpdateLibException ex) {
+				throw new IllegalStateException(ex);
+			}
+		});
+	}
+
+	/**
+	 * Get the last update status.
+	 * @return Last update status.
 	 */
 	public UpdateStatus getLastStatus() {
 		return lastStatus;
 	}
 
 	/**
-	 * Get the last time UpdateLib checked for updates.
-	 *
-	 * @return Last check time in milliseconds.
-	 * @since 2.0.0-SNAPSHOT
+	 * Get the last time UpdateLib checked for an update.
+	 * @return Last check time.
 	 */
 	public long getLastCheck() {
 		return lastCheck;
 	}
 
 	/**
-	 * Get the current version of UpdateLib.
-	 *
-	 * @return Current version of UpdateLib.
-	 * @since 2.1.0-SNAPSHOT
+	 * Get the http connection timeout.
+	 * @return Connection timeout.
 	 */
-	public static String getVersion() {
-		return VERSION;
+	@Internal
+	public int getTimeout() {
+		return timeout;
 	}
 
 }

@@ -21,45 +21,28 @@
  * SOFTWARE.
  */
 
-package dev.hypera.updatelib.objects;
+package dev.hypera.updatelib.exceptions;
 
-import dev.hypera.updatelib.objects.enums.Status;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+public class UpdateLibException extends Exception {
 
-/**
- * Update status
- *
- * @author Joshua Sing <joshua@hypera.dev>
- */
-public class UpdateStatus {
-
-	public static final UpdateStatus DEFAULT = new UpdateStatus(null, null, Status.UNAVAILABLE);
-
-	private final String currentVersion;
-	private final String distributedVersion;
-	private final Status status;
-
-	public UpdateStatus(@Nullable String currentVersion, @Nullable String distributedVersion, @NotNull Status status) {
-		this.currentVersion = currentVersion;
-		this.distributedVersion = distributedVersion;
-		this.status = status;
+	public UpdateLibException() {
+		super();
 	}
 
-	public @Nullable String getCurrentVersion() {
-		return currentVersion;
+	public UpdateLibException(String message) {
+		super(message);
 	}
 
-	public @Nullable String getDistributedVersion() {
-		return distributedVersion;
+	public UpdateLibException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public @NotNull Status getStatus() {
-		return status;
+	public UpdateLibException(Throwable cause) {
+		super(cause);
 	}
 
-	public boolean isAvailable() {
-		return status.isAvailable();
+	protected UpdateLibException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 }

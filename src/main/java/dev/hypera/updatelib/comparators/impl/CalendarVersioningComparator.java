@@ -51,8 +51,4 @@ public class CalendarVersioningComparator implements IVersionComparator {
 		}
 	}
 
-	public static void main(String[] args) {
-		System.out.println();
-	}
-
 }
